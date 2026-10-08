@@ -42,18 +42,3 @@ void BruteForceActivitySelection(Activity arr[], int n) {
     printf("[Brute Force] Maximum number of activities that can be selected: %d\n", max_count);
 }
 
-int main() {
-    Activity arr[] = {
-        {1, 4},
-        {4, 5},
-        {0, 6},
-        {5, 7},
-        {3, 9},
-        {5, 9}
-    };
-    int n = sizeof(arr) / sizeof(arr[0]);
-
-    BruteForceActivitySelection(arr, n);
-
-    return 0;
-}
