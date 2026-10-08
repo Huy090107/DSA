@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+
 int main(){
     FILE *f = fopen("Input100k.txt", "w"); // mo file va ghi du lieu vao file
     if(f == NULL){
