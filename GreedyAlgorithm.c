@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "StructActivity.h"
 
-typedef struct{
-    int start;
-    int finish;
-} Activity;
 
 //Sap xep tang dan theo thoi gian ket thuc cua cac hoat dong
 int Compare(const void *a, const void *b){

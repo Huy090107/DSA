@@ -1,9 +1,6 @@
 #include <stdio.h>
+#include "StructActivity.h"
 
-typedef struct {
-    int start;
-    int finish;
-} Activity;
 
 void BruteForceActivitySelection(Activity arr[], int n) {
     if (n == 0) {
