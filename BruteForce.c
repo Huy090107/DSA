@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include "StructActivity.h"
+
 void BruteForceActivitySelection(Activity arr[], int n) {
     if (n == 0) {
         printf("No activities to select.\n");
@@ -45,3 +48,4 @@ void BruteForceActivitySelection(Activity arr[], int n) {
 
     printf("[Brute Force] Maximum number of activities that can be selected: %d\n", max_count);
 }
+
