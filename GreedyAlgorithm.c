@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "StructActivity.h"
 
-typedef struct{
-    int start;
-    int finish;
-} Activity;
+
+//Sap xep tang dan theo thoi gian ket thuc cua cac hoat dong
 int Compare(const void *a, const void *b){
     Activity *activityA = (Activity *)a; 
     Activity *activityB = (Activity *)b;
@@ -13,6 +12,7 @@ int Compare(const void *a, const void *b){
     else return 0;
 }
 
+//Thuat toan tham lam de chon cac hoat dong
 void ActivitySelection(Activity arr[], int n){
 
     if(n == 0){
@@ -22,10 +22,12 @@ void ActivitySelection(Activity arr[], int n){
 
     int count = 1 ;
 
+    //Sap xep cac hoat dong theo thoi gian ket thuc tang dan bang qsort
     qsort(arr, n, sizeof(Activity), Compare);
     
     int FinishTime = arr[0].finish;
 
+    //Duyet va chon hoat dong 
     for(int i = 1; i < n; i++){
         if(FinishTime <= arr[i].start){
             FinishTime = arr[i].finish;
@@ -35,9 +37,3 @@ void ActivitySelection(Activity arr[], int n){
     printf("Maximum number of activities that can be selected: %d\n", count);
 }
 
-int main(){
-    Activity arr[] = {{1, 4}, {4, 5}, {0, 6}, {5, 7}, {3, 9}, {5, 9}};
-    int n = sizeof(arr) / sizeof(arr[0]);
-    ActivitySelection(arr, n);
-    return 0;
-}
