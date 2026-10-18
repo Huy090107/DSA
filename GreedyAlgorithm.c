@@ -3,6 +3,9 @@
 #include "StructActivity.h"
 
 
+
+
+
 //Sap xep tang dan theo thoi gian ket thuc cua cac hoat dong
 int Compare(const void *a, const void *b){
     Activity *activityA = (Activity *)a; 
@@ -13,11 +16,11 @@ int Compare(const void *a, const void *b){
 }
 
 //Thuat toan tham lam de chon cac hoat dong
-void ActivitySelection(Activity arr[], int n){
+int ActivitySelection(Activity arr[], int n){
 
-    if(n == 0){
+    if(n <= 0){
         printf("No activities to select. \n");
-        return;
+        return 0;
     }
 
     int count = 1 ;
@@ -34,6 +37,6 @@ void ActivitySelection(Activity arr[], int n){
             count++;
         }
     }
-    printf("Maximum number of activities that can be selected: %d\n", count);
+    return count;
 }
 
