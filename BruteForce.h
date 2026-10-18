@@ -2,6 +2,6 @@
 #define BRUTE_FORCE_H
 #include "StructActivity.h"
 
-void BruteForceActivitySelection(Activity arr[], int n);
+int BruteForceActivitySelection(Activity arr[], int n);
 
 #endif
