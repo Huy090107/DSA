@@ -19,6 +19,7 @@ int BruteForceActivitySelection(Activity arr[], int n) {
                 current_count++;
             }
         }
+
         if (current_count > max_count) {
             for (int i = 0; i < n; i++) {
                 if (mask & (1ULL << i)) {
@@ -40,5 +41,7 @@ int BruteForceActivitySelection(Activity arr[], int n) {
         }
     }
 
+
     return max_count;
 }
+
