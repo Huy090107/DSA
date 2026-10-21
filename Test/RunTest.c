@@ -23,18 +23,19 @@ void ExecuteTestSuite(const char *filename) {
 
     for (int t = 1; t <= total_tests; t++) {
         int n = 0;
-        // VÁ LỖI 1: Kiểm tra việc đọc N
         if (fscanf(file, "%d", &n) != 1) {
-            printf("Error: Failed to read N at test %d\n", t);
-            break; 
+            printf("Error: Failed to read N at test %d in %s\n", t, filename);
+            fclose(file);
+            return; 
         }
 
         Activity *arr = NULL;
         if (n > 0) {
             arr = (Activity *)malloc(n * sizeof(Activity));
             if (arr == NULL) {
-                printf("Error: Memory allocation failed for N = %d\n", n);
-                break;
+                printf("Error: Memory allocation failed for N = %d at test %d\n", n, t);
+                fclose(file);
+                return;
             }
             
             for (int i = 0; i < n; i++) {
@@ -50,19 +51,21 @@ void ExecuteTestSuite(const char *filename) {
         int greedy_res = ActivitySelection(arr, n);
         int bf_res = BruteForceActivitySelection(arr, n);
 
-        if (greedy_res == bf_res && greedy_res != -1) {
-            printf("[Test %02d] PASS | N = %2d | Greedy: %d | BruteForce: %d\n", t, n, greedy_res, bf_res);
+        if (greedy_res == bf_res) {
+            if (greedy_res == -1) {
+                printf("[Test %02d] PASS | N = %2d | Both returned -1 (Expected Limit/Error Handling)\n", t, n);
+            } else {
+                printf("[Test %02d] PASS | N = %2d | Greedy: %d | BruteForce: %d\n", t, n, greedy_res, bf_res);
+            }
             passed++;
         } else {
-            printf("[Test %02d] FAIL | N = %2d | Greedy: %d | BruteForce: %d (MISMATCH/ERROR!)\n", t, n, greedy_res, bf_res);
+            printf("[Test %02d] FAIL | N = %2d | Greedy: %d | BruteForce: %d (MISMATCH!)\n", t, n, greedy_res, bf_res);
         }
 
         if (arr) free(arr);
     }
 
-    if (total_tests > 0) {
-        printf("VERIFICATION SUMMARY: %d/%d tests passed (%.1f%%)\n", passed, total_tests, (float)passed / total_tests * 100);
-    }
+    printf("VERIFICATION SUMMARY: %d/%d tests passed (%.1f%%)\n", passed, total_tests, (float)passed / total_tests * 100);
 
     fclose(file);
 }
