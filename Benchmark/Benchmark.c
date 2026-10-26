@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "GreedyAlgorithm.h"
+#include "../GreedyAlgorithm.h"
+
 
 int main(){
+    
 
     FILE *file = fopen("Benchmark/Input100k.txt", "r");
     if(file == NULL){
