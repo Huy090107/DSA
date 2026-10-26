@@ -19,7 +19,6 @@ int Compare(const void *a, const void *b){
 int ActivitySelection(Activity arr[], int n){
 
     if(n <= 0){
-        printf("No activities to select. \n");
         return 0;
     }
 
