@@ -1,0 +1,85 @@
+Test Case N = 6
+
+Initial input (Start - Finish):
+
+A0: (1, 4)
+
+A1: (4, 5)
+
+A2: (0, 6)
+
+A3: (5, 7)
+
+A4: (3, 9)
+
+A5: (5, 9)
+
+
+
+1. Greedy Algorithm Hand-Trace
+
+Step 1: Sort the array in ascending order by finish time.
+
+Array after sorting:
+
+arr[0]: (1, 4)
+
+arr[1]: (4, 5)
+
+arr[2]: (0, 6)
+
+arr[3]: (5, 7)
+
+arr[4]: (3, 9)
+
+arr[5]: (5, 9)
+
+
+
+Step 2: Initialization.
+
+Select the first activity arr[0].
+
+Record count = 1, FinishTime = 4.
+
+
+
+Step 3: Loop through the remaining elements (i from 1 to 5).
+
+- At i = 1, check arr[1] which is (4, 5). Start (4) >= FinishTime (4) -> Valid. Select. Update count = 2, FinishTime = 5.
+
+- At i = 2, check arr[2] which is (0, 6). Start (0) < FinishTime (5) -> Time overlap. Skip.
+
+- At i = 3, check arr[3] which is (5, 7). Start (5) >= FinishTime (5) -> Valid. Select. Update count = 3, FinishTime = 7.
+
+- At i = 4, check arr[4] which is (3, 9). Start (3) < FinishTime (7) -> Time overlap. Skip.
+
+- At i = 5, check arr[5] which is (5, 9). Start (5) < FinishTime (7) -> Time overlap. Skip.
+
+
+
+Greedy Result: 3 activities.
+
+
+
+2. Brute Force Algorithm Hand-Trace
+
+Step 1: Generate subsets.
+
+With N=6, there are 2^6 = 64 subsets (represented by bitmasks from 0 to 63).
+
+
+
+Step 2: Traverse and check for time overlaps.
+
+- Check mask = 1 (000001): Select A0(1, 4). No overlap. Update max_count = 1.
+
+- Check mask = 3 (000011): Select A0(1, 4) and A1(4, 5). No overlap. Update max_count = 2.
+
+- Check mask = 11 (001011): Select A0(1, 4), A1(4, 5), and A3(5, 7). No pairs overlap. Update max_count = 3.
+
+- Check mask = 63 (111111): Select all. When comparing, A2(0, 6) overlaps with the other activities. Marked as invalid, keep max_count unchanged.
+
+
+
+Brute Force Result: 3 activities.
