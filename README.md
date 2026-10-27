@@ -45,6 +45,12 @@ The Greedy Algorithm solves the Interval Scheduling Problem by always making the
 
 ### 3.2. BruteForce Algorithm
 
+The exact solver utilizes a bitmask-based subset generation technique to guarantee an optimal solution by exhaustively evaluating all possible activity combinations:
+
+- **Subset Generation:** Uses an unsigned 64-bit integer (`unsigned long long`) as a bitmask to represent subsets. A bitmask ranges from $0$ to $2^N - 1$, covering all $2^N$ possible combinations.
+- **Pruning:** Before validating a subset for overlaps, the algorithm counts the number of selected activities (`current_count`). The overlap check is only executed if `current_count` is strictly greater than the current `max_count`, skipping unnecessary validations for smaller, suboptimal subsets.
+- **Overlap Validation:** For qualifying subsets, a nested loop checks every pair of selected activities ($i$ and $j$). An overlap is detected if `arr[i].start < arr[j].finish` and `arr[j].start < arr[i].finish`. If an overlap is found, the subset is immediately marked invalid and discarded.
+
 ## 4. Correctness Proof (Exchange Argument)
 
 To prove that the Greedy Choice strategy (selecting the activity with the earliest finish time) yields an global optimal solution, we use the **Exchange Argument** combined with induction:
@@ -75,6 +81,11 @@ $$\text{Total Time Complexity} = O(N \log N) + O(N) = \mathbf{O(N \log N)}$$
 $$\text{Total Space Complexity} = \mathbf{O(N)}$$
 
 ### 5.2. BruteForce Algorithm
+
+- **Time Complexity:** $O(N^2 \cdot 2^N)$
+  The outer loop generates $2^N$ subsets. In the worst-case scenario (where a subset has more activities than `max_count`), evaluating the subset requires iterating through all selected activity pairs to check for overlaps, which takes $O(N^2)$ time.
+- **Space Complexity:** $O(1)$ Auxiliary
+  The algorithm evaluates activities strictly in place using integer variables and a 64-bit mask for state tracking, requiring no additional data structures. The space complexity is constant, excluding the input array itself.
 
 ## 6. Implementation & Execution Guide
 
@@ -138,7 +149,50 @@ Run `Benchmark`: ./Benchmark/Benchmark.exe
 
 ### 7.1. Automated 20+ Test Scenarios
 
+The Test/RunTest.c suite dynamically handles test execution and algorithmic validation:
+
+- Dynamic Memory & Parsing: Reads raw data files (TestCase.txt and EdgeCase.txt), allocating memory dynamically via malloc based on the specified $N$ size of each test case. Memory is safely freed after each test iteration to prevent leaks.
+- A/B Output Verification: Executes both ActivitySelection (Greedy) and BruteForceActivitySelection on identical input arrays.
+- Success Criteria: A test passes exclusively if the result of the Greedy algorithm matches the optimal result produced by the Brute Force algorithm. The runner outputs a detailed CLI trace for each test and calculates a final success rate percentage.
+
 ### 7.2. Hand-Traceable Example
+
+To demonstrate and compare the step-by-step mechanics of both algorithms, we trace **Test 01** from `Test/TestCase.txt` containing $N = 6$ activities.
+
+#### Sample Input Dataset
+
+- $A_0 = (1, 4)$
+- $A_1 = (4, 5)$
+- $A_2 = (0, 6)$
+- $A_3 = (5, 7)$
+- $A_4 = (3, 9)$
+- $A_5 = (5, 9)$
+
+#### 1. Greedy Algorithm
+
+- **Step 1 (Sort):** Sort activities in ascending order by finish time:
+  - `arr[0]`: $(1, 4)$
+  - `arr[1]`: $(4, 5)$
+  - `arr[2]`: $(0, 6)$
+  - `arr[3]`: $(5, 7)$
+  - `arr[4]`: $(3, 9)$
+  - `arr[5]`: $(5, 9)$
+- **Step 2 (Initialization):** Select `arr[0]` $(1, 4)$. Set `count = 1`, `FinishTime = 4`.
+- **Step 3 (Iteration):**
+  - Check `arr[1]` $(4, 5)$: Start $4 \ge 4 \rightarrow$ Valid. Select. Update `count = 2`, `FinishTime = 5`.
+  - Check `arr[2]` $(0, 6)$: Start $0 < 5 \rightarrow$ Overlap. Skip.
+  - Check `arr[3]` $(5, 7)$: Start $5 \ge 5 \rightarrow$ Valid. Select. Update `count = 3`, `FinishTime = 7`.
+  - Check `arr[4]` $(3, 9)$: Start $3 < 7 \rightarrow$ Overlap. Skip.
+  - Check `arr[5]` $(5, 9)$: Start $5 < 7 \rightarrow$ Overlap. Skip.
+- **Greedy Result:** **3** activities selected ($A_0, A_1, A_3$).
+
+#### 2. BruteForce Algorithm
+
+- **Step 1 (Subsets Generation):** Evaluate $2^6 = 64$ possible combinations using bitmasks ($0$ to $63$).
+- **Step 2 (Overlap Validation):**
+  - **Mask `11` (`001011`):** Selects $A_0(1,4)$, $A_1(4,5)$, and $A_3(5,7)$. No overlapping pairs. Maximum valid set size = **3**.
+  - **Mask `63` (`111111`):** Selects all activities. Multiple overlaps detected (e.g., $A_0$ and $A_2$). Invalid set.
+- **BruteForce Result:** **3** activities selected.
 
 ### 7.3. Large-Scale Performance Test (100,000 Activities)
 
@@ -165,6 +219,18 @@ To evaluate system stability and measure average execution performance, the benc
 
 ### 7.4. Edge Cases Handling
 
+The `EdgeCase.txt` file targets vulnerability points and extreme bounds with 9 specialized scenarios. Both algorithms maintain 100% accuracy against the following configurations:
+
+1. **Empty Set ($N = 0$):** Tests termination and zero-state handling.
+2. **Single Activity ($N = 1$):** Minimum viable input without pair comparisons.
+3. **Contiguous Chain:** Activities start exactly when the previous finishes (e.g., $1-3$, $3-5$, $5-7$) to test strict vs. non-strict inequality boundaries.
+4. **Identical Clones:** All activities have the exact same start and finish times ($2-6$, $2-6$, $2-6$).
+5. **Enveloping Interval:** A massive activity ($0-100$) overlapping multiple smaller, valid, and disjoint activities ($1-2$, $3-4$, $5-6$).
+6. **Nested / Russian Doll:** Progressively smaller nested intervals ($1-10$, $2-9$, $3-8$, $4-7$) to ensure the Greedy algorithm prioritizes the earliest finish time, not the duration.
+7. **Reverse Sorted Input:** Start/Finish times arranged in descending order to test sorting dependencies.
+8. **Zero-Duration Point:** An activity where start and finish times are identical ($2-2$).
+9. **Zero-Index Start:** Testing index/start combinations directly at $0$ (e.g., $0-0$, $0-5$).
+
 ## 8. Self-Explanation
 
 ### 8.1. Implementation of Greedy and Brute Force (Requirements 1 & 2)
@@ -177,7 +243,7 @@ To evaluate system stability and measure average execution performance, the benc
 
 We generated 20 realistic scheduling scenarios containing activity intervals with different start and finish times. Both the Greedy and Brute Force algorithms were executed on all 20 test cases. The results matched in every case, confirming that the Greedy algorithm consistently produced the same maximum number of compatible activities as the exact solver for the tested inputs.
 
-### 8.3. . Large-Scale Performance Evaluation (Requirement 4)
+### 8.3. Large-Scale Performance Evaluation (Requirement 4)
 
 **Dataset and Setup:** We tested the Greedy algorithm with 100,000 activity intervals from `Input100k.txt`.
 
@@ -202,12 +268,12 @@ These examples show that choosing the earliest finishing activity is a more reli
 
 ## 9. AI Usage Log
 
-| Week       | AI                                 | Prompt                                                                                                                                                                                                                                                                                                                                                                                | AI Assistance / Suggestions                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Processing & Improvement                                                                                                                                                                                                                                                                                                                                               |
-| :--------- | :--------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Tuần 1** | **ChatGPT**<br>_(ChatGPT-6)_       | 1. Guidance on Greedy algorithm problem topics.<br>2. Reviewing Greedy algorithm code.                                                                                                                                                                                                                                                                                                | • Outline 10 steps for implementing the project.<br>• Identify 2 logic errors: incorrect initialization of `count = 0` and failure to handle an empty array ($n = 0$).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | • Set `count = 1` (since the first activity is always selected).<br>• Add a condition to check for an empty list ($n = 0$).                                                                                                                                                                                                                                            |
-| **Tuần 1** | **Gemini**<br>_(Gemini 3.6 Flash)_ | 1. Brute Force code review.<br>2. Guide on combining two algorithms to run together.                                                                                                                                                                                                                                                                                                  | • Identify the error in the time-overlap check logic.<br>• Warn about compilation errors caused by directly `#include`-ing `.c` files; suggest using Header Guards (`#ifndef`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | • Added a limit check for $N$ and corrected the logic for overlapping time intervals.<br>• Created a header file, `StructActivity.h`, to be shared by both algorithms.                                                                                                                                                                                                 |
-| **Tuần 2** | **Gemini**<br>_(Gemini 3.6 Flash)_ | 1. Instructions for measuring execution time (benchmarking with 100k data points).<br>2. Fix the "Cannot open file" error & verify edge cases/test cases.<br>3. Review and optimize the automated test suite (`RunTest.c`).                                                                                                                                                           | • Suggest using `clock()` from `<time.h>`.<br>• Identified issues: incorrect file path for `Input100k.txt` and attempting to assign the result of a `void` function.<br>• Recommended adding 2 edge cases (start = finish, start = 0).<br>• Flagged critical errors: improper type casting (using `%`), failure to check the return value of `fscanf`, and resource leaks (memory/file leaks).                                                                                                                                                                                                                                                                                         | • • Change the return type of the `Greedy` function from `void` to `int`.<br>• Correct the file path in `fopen("Benchmark/Input100k.txt", "r")`.<br>• Add two edge cases to the test suite.<br>• Fix type-casting errors, memory leaks, and the handling of test case return codes.                                                                                    |
-| **Tuần 3** | **Gemini**<br>_(Gemini 3.6 Flahs)_ | 1. 1. Summary of sections to be included to complete the `README.md` file.<br>2. Markdown formatting guidelines for the structure of the `README.md` file.<br>3. Fix for the issue in `Benchmark.c` (within the `Benchmark/` directory) where `GreedyAlgorithm.h` could not be found.<br>4. Explanation for the anomalous $18\text{ ms}$ result observed during the 5 benchmark runs. | •Outlined a 10-section standard structure for the `README.md` file (covering Project Overview, Problem Statement, Algorithm Design, Proof, Complexity, Execution Guide, Results, Self-Explanation, AI Log, and Conclusion) along with guidelines for Markdown formatting (headers, tables, code blocks, and `<details>` tags).<br>• Identified the cause of the missing header error in `Benchmark.c` (located in the `Benchmark/` subdirectory) and recommended updating the path to `#include "../GreedyAlgorithm.h"`.<br>• Analyzed the 18 ms result, attributing it to CPU cache hits and OS scheduling; advised retaining the 5-run measurement set (with an average of 24.8 ms). | • Implemented the 10-section structure and Markdown formatting in `README.md`.<br>• Corrected the `#include "../GreedyAlgorithm.h"` path in `Benchmark.c`, enabling successful compilation.<br>• Retained the 5 performance measurement runs and updated the average to 24.8 ms.<br>• Completed the Self-Explanation (Section 8) and Conclusion (Section 10) sections. |
+| Week       | AI                                 | Prompt                                                                                                                                                                                                                                                                                                                                                                             | AI Assistance / Suggestions                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Processing & Improvement                                                                                                                                                                                                                                                                                                                                               |
+| :--------- | :--------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Week 1** | **ChatGPT**<br>_(ChatGPT-6)_       | 1. Guidance on Greedy algorithm problem topics.<br>2. Reviewing Greedy algorithm code.                                                                                                                                                                                                                                                                                             | • Outline 10 steps for implementing the project.<br>• Identify 2 logic errors: incorrect initialization of `count = 0` and failure to handle an empty array ($n = 0$).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | • Set `count = 1` (since the first activity is always selected).<br>• Add a condition to check for an empty list ($n = 0$).                                                                                                                                                                                                                                            |
+| **Week 1** | **Gemini**<br>_(Gemini 3.6 Flash)_ | 1. Brute Force code review.<br>2. Guide on combining two algorithms to run together.                                                                                                                                                                                                                                                                                               | • Identify the error in the time-overlap check logic.<br>• Warn about compilation errors caused by directly `#include`-ing `.c` files; suggest using Header Guards (`#ifndef`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | • Added a limit check for $N$ and corrected the logic for overlapping time intervals.<br>• Created a header file, `StructActivity.h`, to be shared by both algorithms.                                                                                                                                                                                                 |
+| **Week 2** | **Gemini**<br>_(Gemini 3.6 Flash)_ | 1. Instructions for measuring execution time (benchmarking with 100k data points).<br>2 Fix the "Cannot open file" error & verify edge cases/test cases.<br>3. Review and optimize the automated test suite (`RunTest.c`).                                                                                                                                                         | • Suggest using `clock()` from `<time.h>`.<br>• Identified issues: incorrect file path for `Input100k.txt` and attempting to assign the result of a `void` function.<br>• Recommended adding 2 edge cases (start = finish, start = 0).<br>• Flagged critical errors: improper type casting (using `%`), failure to check the return value of `fscanf`, and resource leaks (memory/file leaks).                                                                                                                                                                                                                                                                                         | • • Change the return type of the `Greedy` function from `void` to `int`.<br>• Correct the file path in `fopen("Benchmark/Input100k.txt", "r")`.<br>• Add two edge cases to the test suite.<br>• Fix type-casting errors, memory leaks, and the handling of test case return codes.                                                                                    |
+| **Week 3** | **Gemini**<br>_(Gemini 3.6 Flash)_ | 1. Summary of sections to be included to complete the `README.md` file.<br>2. Markdown formatting guidelines for the structure of the `README.md` file.<br>3. Fix for the issue in `Benchmark.c` (within the `Benchmark/` directory) where `GreedyAlgorithm.h` could not be found.<br>4. Explanation for the anomalous $18\text{ ms}$ result observed during the 5 benchmark runs. | •Outlined a 10-section standard structure for the `README.md` file (covering Project Overview, Problem Statement, Algorithm Design, Proof, Complexity, Execution Guide, Results, Self-Explanation, AI Log, and Conclusion) along with guidelines for Markdown formatting (headers, tables, code blocks, and `<details>` tags).<br>• Identified the cause of the missing header error in `Benchmark.c` (located in the `Benchmark/` subdirectory) and recommended updating the path to `#include "../GreedyAlgorithm.h"`.<br>• Analyzed the 18 ms result, attributing it to CPU cache hits and OS scheduling; advised retaining the 5-run measurement set (with an average of 24.8 ms). | • Implemented the 10-section structure and Markdown formatting in `README.md`.<br>• Corrected the `#include "../GreedyAlgorithm.h"` path in `Benchmark.c`, enabling successful compilation.<br>• Retained the 5 performance measurement runs and updated the average to 24.8 ms.<br>• Completed the Self-Explanation (Section 8) and Conclusion (Section 10) sections. |
 
 ## 10. Conclusion
 
