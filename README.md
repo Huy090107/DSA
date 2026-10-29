@@ -21,7 +21,7 @@
 Given a set of $n$ activities, each represented by a start time $s_i$ and a finish time $f_i$, select the maximum number of mutually compatible activities (non-overlapping).<br>
 The project fulfills all core requirements:
 
-- Implemented Greedy Activity Selection Algorithm ($O(N \log N)$).
+- Implemented Greedy Activity Selection Algorithm ( $O(N \log N)$ ).
 - Implemented Exact Solver via Brute Force / Dynamic Programming ($O(2^N)$).
 - Automated test suite covering 20+ realistic scenarios and edge cases.
 - Performance evaluation using 100,000 activities.
@@ -39,7 +39,7 @@ The Greedy Algorithm solves the Interval Scheduling Problem by always making the
 1. **Sorting:** Sort all $N$ activities in non-decreasing order of their finish times ($f_1 \le f_2 \le \dots \le f_n$).
 2. **Initialization:** Select the first activity $A_1$ and set `last_finish_time = f_1`.
 3. **Iterative Selection:** Iterate through the remaining sorted activities ($i = 2 \dots N$):
-   - If start time $s_i \ge \text{last\_finish\_time}$, select activity $A_i$.
+   - If start time $s_i \ge$ `last_finish_time`, select activity $A_i$.
    - Update `last_finish_time = f_i`.
    - Otherwise, skip activity $A_i$.
 
@@ -56,7 +56,7 @@ The exact solver utilizes a bitmask-based subset generation technique to guarant
 To prove that the Greedy Choice strategy (selecting the activity with the earliest finish time) yields an global optimal solution, we use the **Exchange Argument** combined with induction:
 
 - **Base Case:** Let $g$ be the activity with the earliest finish time among all available activities. Consider an optimal solution $O$ whose first selected activity is $a$.
-- **Exchange Step:** Since $g$ finishes no later than $a$ ($f(g) \le f(a)$), replacing $a$ with $g$ in $O$ preserves compatibility for all subsequent activities in $O$. Thus, $O' = (O \setminus \{a\}) \cup \{g\}$ is also valid and optimal.
+- **Exchange Step:** Since $g$ finishes no later than $a$ $(f(g) \le f(a)),$ replacing $a$ with $g$ in $O$ preserves compatibility for all subsequent activities in $O$. Thus, $O' = (O \setminus \{a\}) \cup \{g\}$ is also valid and optimal.
 - **Inductive Step:** Therefore, an optimal solution starting with $g$ exists. Removing $g$ leaves a subproblem of selecting compatible activities starting after $f(g)$. By induction on the subproblem, every Greedy choice preserves optimality.
 - **Conclusion:** The Greedy Algorithm yields a globally optimal solution.
 
