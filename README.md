@@ -22,7 +22,7 @@ Given a set of $n$ activities, each represented by a start time $s_i$ and a fini
 The project fulfills all core requirements:
 
 - Implemented Greedy Activity Selection Algorithm ( $O(N \log N)$ ).
-- Implemented Exact Solver via Brute Force / Dynamic Programming ($O(2^N)$).
+- Implemented Exact Solver via Brute Force / Dynamic Programming $(O(2^N)).$
 - Automated test suite covering 20+ realistic scenarios and edge cases.
 - Performance evaluation using 100,000 activities.
 - Formal Exchange Argument correctness proof.
