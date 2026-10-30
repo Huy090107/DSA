@@ -10,7 +10,7 @@ int main(){
     }
 
     int n = 100000;
-    fprintf(f, "Input 100000 intervals\n");
+    fprintf(f, "&d\n");
 
     srand(time(NULL)); // giup tao thoi gian ngau nhien khac nhau cho moi lan chay ma -> giup khong bi trung lap
     for(int i = 0; i < n; i++){
